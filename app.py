@@ -68,5 +68,5 @@ def bad_parameters(e):
 
 
 @app.errorhandler(500)
-def error(e):
-    return ('Sorry, something went wrong!', 500)
+def error(err):
+    return ("Sorry, something went wrong: {}!".format(err), 500)
