@@ -2,7 +2,7 @@ import os
 from uuid import uuid4
 
 import sendgrid
-from sendgrid.helpers.mail import *
+from sendgrid.helpers.mail import Mail, Email, Content
 from flask.ext.cors import CORS
 from flask.ext.sqlalchemy import SQLAlchemy
 from flask import Flask, request, redirect, abort
@@ -27,23 +27,27 @@ class User(db.Model):
 
 def build_email(from_email, subject, to_email, message):
     """Sent email with Sendgrid"""
-    content = Content("text/plain", message)
-    mail = Mail(Email(from_email), subject, Email(to_email), content)
-
-    return mail.get()
+    mail = Mail(
+        from_email=Email(from_email),
+        subject=subject,
+        to_email=Email(to_email),
+        content=Content("text/plain", message)
+    )
+    return mail
 
 
 @app.route('/')
 def index():
-    return redirect('http://samdobson.github.io/fwdform')
+    return redirect('http://colmarius.github.io/fwdform')
 
 
 @app.route('/register', methods=['POST'])
 def register():
-    user = User.query.filter_by(email=request.form['email']).first()
+    email = request.form['email']
+    user = User.query.filter_by(email=email).first()
     if user:
         return ('Email already registered', 403)
-    user = User(request.form['email'])
+    user = User(email)
     db.session.add(user)
     db.session.commit()
     return "Token: {}".format(user.uuid)
@@ -61,7 +65,7 @@ def forward(uuid):
         message=request.form['message']
     )
     response = sg.client.mail.send.post(request_body=mail.get())
-    if response.status_code != 200:
+    if response.status_code != 202:
         abort(500)
     if 'next' in request.form:
         return redirect(request.form['next'])
@@ -72,7 +76,7 @@ def forward(uuid):
 def bad_parameters(e):
     return ('<p>Missing information. Press the back button to complete '
             'the empty fields.</p><p><i>Developers: we were expecting '
-            'the parameters "name", "email" and "message". You might '
+            'the parameters "subject", "email" and "message". You might '
             'also consider using JS validation.</i>', 400)
 
 
