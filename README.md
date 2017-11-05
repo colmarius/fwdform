@@ -45,7 +45,7 @@ Spin up your own free [Heroku](http://www.heroku.com) instance. A [Mandrill](htt
 ```bash
     $ git clone https://github.com/samdobson/fwdform.git
     $ heroku create
-    $ heroku config:set MANDRILL_API_KEY=<KEY>
+    $ heroku config:set SENDGRID_API_KEY=<KEY>
     $ heroku addons:add heroku-postgresql:hobby-dev
     $ heroku pg:promote HEROKU_POSTGRESQL_COLOR
     $ heroku ps:scale web=1

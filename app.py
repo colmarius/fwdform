@@ -1,7 +1,8 @@
 import os
 from uuid import uuid4
 
-from mandrill import Mandrill
+import sendgrid
+from sendgrid.helpers.mail import *
 from flask.ext.cors import CORS
 from flask.ext.sqlalchemy import SQLAlchemy
 from flask import Flask, request, redirect, abort
@@ -9,7 +10,7 @@ from flask import Flask, request, redirect, abort
 app = Flask(__name__)
 cors = CORS(app)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URL']
-mandrill_client = Mandrill(os.environ['MANDRILL_API_KEY'])
+sg = sendgrid.SendGridAPIClient(apikey=os.environ.get('SENDGRID_API_KEY'))
 db = SQLAlchemy(app)
 
 
@@ -22,6 +23,14 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(200), unique=True)
     uuid = db.Column(db.String(36), unique=True)
+
+
+def build_email(from_email, subject, to_email, message):
+    """Sent email with Sendgrid"""
+    content = Content("text/plain", message)
+    mail = Mail(Email(from_email), subject, Email(to_email), content)
+
+    return mail.get()
 
 
 @app.route('/')
@@ -45,14 +54,14 @@ def forward(uuid):
     user = User.query.filter_by(uuid=uuid).first()
     if not user:
         return ('User not found', 406)
-    message = {
-        'to': [{'email': user.email}],
-        'from_email': request.form['email'],
-        'subject': request.form['subject'],
-        'text': request.form['message'],
-    }
-    result = mandrill_client.messages.send(message=message)
-    if result[0]['status'] != 'sent':
+    mail = build_email(
+        from_email=request.form['email'],
+        subject=request.form['subject'],
+        to_email=user.email,
+        message=request.form['message']
+    )
+    response = sg.client.mail.send.post(request_body=mail.get())
+    if response.status_code != 200:
         abort(500)
     if 'next' in request.form:
         return redirect(request.form['next'])
