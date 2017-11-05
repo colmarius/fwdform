@@ -12,7 +12,7 @@ Usage
 Register your email:
 
 ```bash
-    $ curl --data "email=<your_email>" https://fwdform.herokuapp.com/register
+    $ curl --data "email=<your_email>" https://happy-forwarder.herokuapp.com/register
     Token: 780a8c9b-dc2d-4258-83af-4deefe446dee
 
 ```
@@ -20,14 +20,14 @@ Register your email:
 Test (optional):
 
 ```bash
-    $ curl --data "email=person@form.com&subject=subject&message=hello" \
-           https://fwdform.herokuapp.com/user/<token>
+    $ curl --data "email=hello@test.com&subject=test&message=hello" \
+           https://happy-forwarder.herokuapp.com/user/780a8c9b-dc2d-4258-83af-4deefe446dee
 ```
 
 Put into action:
 
 ```html
-<form action="https://fwdform.herokuapp.com/user/<token>">
+<form action="https://happy-forwarder.herokuapp.com/user/<token>">
   Email: <input type="text" name="email"><br>
   Subject: <input type="text" name="subject"><br>
   Message: <textarea name="message" cols="40" rows="5"></textarea>
@@ -40,10 +40,10 @@ NB: Required parameters are: `email`, `subject` and `message`. Other parameters 
 Privacy concerns?
 -----------------
 
-Spin up your own free [Heroku](http://www.heroku.com) instance. A [Mandrill](http://mandrill.com) account required for email delivery.
+Spin up your own free [Heroku](http://www.heroku.com) instance. A [Sendgrid](https://sendgrid.com/) account required for email delivery.
 
 ```bash
-    $ git clone https://github.com/samdobson/fwdform.git
+    $ git clone https://github.com/colmarius/fwdform.git
     $ heroku create
     $ heroku config:set SENDGRID_API_KEY=<KEY>
     $ heroku addons:add heroku-postgresql:hobby-dev
